@@ -502,7 +502,7 @@ function story(caseIndex,part=0,manual=false){
  showActor('Khalid');byId('storyLayout').hidden=false;setText('fileSerial','ملف '+String(c.id).padStart(2,'0')+' / 14');
  setText('storyTag',c.skill);setText('caseTitle',c.title);
  const sections=splitStory(c.story),key='case_'+String(c.id).padStart(2,'0')+'_narration';
- const prev=()=>{if(part>0)story(caseIndex,part-1,true);else if(c.num===1)speech('opening',c.session,splitSpeech(DATA.openings[String(c.session)]).length-1,true);else revisitVerdict(CASES[caseIndex-1],()=>story(caseIndex,0,true))};
+ const prev=()=>{if(part>0)story(caseIndex,part-1,true);else if(c.num===1)speech('opening',c.session,splitSpeech(DATA.openings[String(c.session)]).length-1,true);else revisitVerdict(CASES[caseIndex-1],()=>story(caseIndex,0,false))};
  const paint=i=>{
   if(i===0){setText('storyText','');setText('storyStep','عنوان القضية');byId('railFill').style.width='0%';return}
   const j=Math.min(sections.length-1,i-1);
@@ -530,7 +530,7 @@ choices=function(){
  controls(()=>story(state.idx,Math.max(0,p.length-1),true),progress.approved.has(c.id)?()=>accepted(c,false):null,
  'ارجعي إلى القضية أو اختاري الحكم','التالي: متابعة المحكمة','السابق: القضية');
 };
-reviewCase=function(){if(state.phase==='choice')story(state.idx,0,true)};
+reviewCase=function(){if(state.phase==='choice')story(state.idx,0,false)};
 function debateScene(c,opt,line=0,manual=false){
  const parts=getDialogue(c,opt);if(line>=parts.length){choices();return}
  const v=parts[line];scene('debate');hud('الجلسة '+sesName(c.session),'القضية '+c.num+' · مداولة '+letters[opt],'مناقشة اختيار القاضي');
@@ -557,7 +557,7 @@ const oldFinish=finish;
 finish=function(){oldFinish();controls(()=>speech('closing',2,splitSpeech(DATA.closings['2']).length-1,true),null,'مراجعة الختام',null,'السابق: الختام')};
 const oldReset=reset;
 reset=function(){progress.approved.clear();progress.resume.clear();progress.maxVisited=0;oldReset();controls(null,null)};
-byId('caseNavigator').addEventListener('change',e=>{const val=e.target.value;if(val==='')return;const target=Number(val);if(!Number.isInteger(target)||target<0||target>progress.maxVisited)return;stop();progress.resume.clear();story(target,0,true)});
+byId('caseNavigator').addEventListener('change',e=>{const val=e.target.value;if(val==='')return;const target=Number(val);if(!Number.isInteger(target)||target<0||target>progress.maxVisited)return;stop();progress.resume.clear();story(target,0,false)});
 byId('backScene').addEventListener('click',()=>{if(progress.previous)progress.previous()});
 byId('nextScene').addEventListener('click',()=>{if(progress.next)progress.next()});
 byId('courtMute').addEventListener('click',()=>{fxEnabled=!fxEnabled;setText('courtMute',fxEnabled?'🔊 المؤثرات':'🔇 المؤثرات')});
