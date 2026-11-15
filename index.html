@@ -126,6 +126,16 @@
  .stage[data-phase="story"] .text-rail{flex-wrap:wrap;gap:7px}
  .stage[data-phase="story"] .rail{width:min(150px,45vw)}
 }
+
+/* Consistent actual dropdown: the label never appears alone. */
+.court-controls label:has(+ #caseNavigator[hidden]){display:none!important}
+#caseNavigator{display:block;appearance:auto!important;cursor:pointer;min-height:36px;flex-shrink:1}
+#caseNavigator[hidden]{display:none!important}
+.stage[data-phase="story"] .court-controls{z-index:24}
+@media(max-width:860px){
+ .stage[data-phase="story"] .court-controls{flex-wrap:wrap;justify-content:flex-start}
+ .stage[data-phase="story"] #caseNavigator{width:170px!important;max-width:48vw!important}
+}
 </style>
 </head>
 <body>
@@ -174,7 +184,7 @@
     </section>
     <div class="lower-right"><span class="gold-dot"></span><span id="situation">المحكمة مستعدة</span></div>
     <div class="lower-left"><span>الوقائع افتراضية وتستند إلى وثيقتي الإطار الوطني والمهارات</span><span id="stepInfo">انتظار بدء المحاكمة</span></div>
-    <nav class="court-controls" id="courtControls" hidden aria-label="التنقل بين المقاطع"><div><button id="backScene" type="button">السابق</button><button id="nextScene" class="next" type="button">التالي</button></div><label for="caseNavigator" style="font-size:11px;color:#f5d9ad">الانتقال إلى قضية سابقة</label><select id="caseNavigator" aria-label="الانتقال إلى قضية سبق الوصول إليها" style="max-width:245px;width:100%;padding:7px 10px;border-radius:7px;border:1px solid #d8b578;background:#142239;color:#ffe3ac;font:700 12px Tajawal,sans-serif" hidden></select><small id="courtHint">يمكنك الرجوع أو المتابعة</small></nav>
+    <nav class="court-controls" id="courtControls" hidden aria-label="التنقل بين المقاطع"><div><button id="backScene" type="button">السابق</button><button id="nextScene" class="next" type="button">التالي</button></div><label for="caseNavigator" style="font-size:11px;color:#f5d9ad">انتقال بين القضايا</label><select id="caseNavigator" aria-label="الانتقال إلى قضية سبق الوصول إليها" style="max-width:245px;width:100%;padding:7px 10px;border-radius:7px;border:1px solid #d8b578;background:#142239;color:#ffe3ac;font:700 12px Tajawal,sans-serif" hidden></select><small id="courtHint">يمكنك الرجوع أو المتابعة</small></nav>
     <aside id="khalidAudioDock" class="khalid-audio-dock" aria-label="التحكم بصوت رئيس المحكمة خالد" hidden>
       <div class="khalid-audio-identity"><strong>🎙️ صوت خالد</strong><small id="khalidAudioStatus" aria-live="polite">جارٍ التحميل</small></div>
       <span class="khalid-audio-divider" aria-hidden="true"></span>
@@ -343,18 +353,18 @@ byId('khalidMuteButton').addEventListener('click',()=>{
 const progress={approved:new Set(),resume:new Map(),previous:null,next:null,maxVisited:0};
 function refreshCaseNavigator(){
  const select=byId("caseNavigator");if(!select)return;
- select.hidden=progress.maxVisited<1 || state.phase==="landing";
+ select.hidden=state.phase==="landing" || state.phase==="opening" && progress.maxVisited===0;
  const selected=state.idx;
- select.replaceChildren(new Option("انتقلي إلى قضية سبق الوصول إليها",""));
+ select.replaceChildren(new Option("اختر القضية ▾",""));
  for(let i=0;i<=progress.maxVisited&&i<CASES.length;i++){
   const c=CASES[i];select.add(new Option("القضية "+c.id+" — "+c.title,String(i)));
  }
- select.value=state.phase==="story"||state.phase==="choice"||state.phase==="debate"||state.phase==="verdict"?String(selected):"";
+ select.value="";
 }
 
 function controls(previous,next,hint,nextLabel,previousLabel){
  progress.previous=previous;progress.next=next;
- byId('courtControls').hidden=!(previous||next||progress.maxVisited>=1&&state.phase!=='landing');
+ byId('courtControls').hidden=!(previous||next||state.phase==='story'||state.phase==='choice'||state.phase==='verdict');
  refreshCaseNavigator();
  byId('backScene').hidden=!previous;byId('nextScene').hidden=!next;
  setText('backScene',previousLabel||'السابق');setText('nextScene',nextLabel||'التالي');
