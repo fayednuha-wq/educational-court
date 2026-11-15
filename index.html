@@ -87,6 +87,20 @@
   .khalid-audio-dock{gap:6px;padding:7px}
   .khalid-audio-button{padding:7px}
 }
+
+/* Navigation layout: keep the single back action away from choices and other UI. */
+.stage[data-phase="choice"] .court-controls{left:4%;bottom:24px;transform:none;align-items:flex-start;gap:4px;max-width:260px}
+.stage[data-phase="choice"] .court-controls>div{justify-content:flex-start}
+.stage[data-phase="choice"] .court-controls small{display:none}
+.stage[data-phase="choice"] .choice-layer{padding-bottom:62px}
+@media(max-width:700px){
+ .stage[data-phase="choice"] .court-controls{left:3%;right:3%;bottom:7px;max-width:none;flex-direction:row;justify-content:space-between;align-items:center;gap:8px}
+ .stage[data-phase="choice"] .court-controls>div{flex-shrink:0;gap:5px}
+ .stage[data-phase="choice"] .court-controls button{min-width:0;padding:7px 8px;font-size:11px}
+ .stage[data-phase="choice"] .court-controls label{display:none}
+ .stage[data-phase="choice"] #caseNavigator{max-width:175px!important;min-width:0;font-size:10px!important}
+ .stage[data-phase="choice"] .choice-layer{padding-bottom:82px;justify-content:flex-start;overflow-y:auto}
+}
 </style>
 </head>
 <body>
@@ -128,7 +142,7 @@
       <div class="choice-layer" id="choiceLayer" hidden>
         <div class="choice-head"><div class="overline">توقّف المشهد · القرار للقاضي</div><h2 id="choiceTitle">ما الحكم الذي تصدره؟</h2><p>بعد اختيار الحكم، ستناقش الهيئة تبعاته إذا كان خاطئًا. لا يمكنك معرفة الحكم الصحيح بالتخمين من ترتيب الخيارات.</p></div>
         <div class="choices" id="choiceGrid"></div>
-        <div class="choice-footer" id="choiceFooter">اختر حكمًا واحدًا لاستكمال المشهد</div><div class="choice-actions"><button class="review-button" id="reviewCaseButton" type="button">↺ عودة إلى القضية</button></div>
+        <div class="choice-footer" id="choiceFooter">اختر حكمًا واحدًا لاستكمال المشهد</div>
       </div>
       <div class="verdict-layer" id="verdictLayer" hidden><div class="verdict-emblem">✓</div><div class="overline">اعتمد الحكم</div><h2 id="verdictTitle">قرار تربوي مدعوم بالأدلة</h2><p id="verdictExplain"></p><div class="auto-next">انتقال تلقائي إلى القضية التالية <span class="progress-circle"></span></div></div>
       <div class="end-layer" id="endLayer" hidden><div class="end-scale">⚖</div><div class="overline">تم رفع الجلسة</div><h2>اكتملت المحاكمة</h2><p id="endMessage"></p><div class="scoreboard"><span>القضايا المحسومة <b>14 / 14</b></span><span>قرارات روجعت <b id="mistakeCount">0</b></span></div><button id="restartButton" class="begin-button" type="button">إعادة مشاهدة التجربة <span>↻</span></button></div>
@@ -227,7 +241,7 @@ function advance(){const c=CASES[state.idx];if(c.num===7){closing(c.session)}els
 function closing(session){scene('closing');const title=session===1?'الأولى':'الثانية';hud(`الجلسة ${title}`,'البيان الختامي','رفع الجلسة');showActor('Khalid');const txt=DATA.closings[String(session)];ceremonySpeech(`ceremony_s${session}_closing`,txt,()=>{if(session===1)opening(2);else finish()})}
 function finish(){scene('end');hud('ملفات المحكمة','انتهى النظر في جميع القضايا','المحاكمة مكتملة');byId('endLayer').hidden=false;setText('endMessage','أصدرت أربعة عشر حكمًا في قضايا التدريس والمهارات والتقويم. كل مراجعة للحكم كانت فرصة لاكتشاف أثر القرار على تعلم الطلاب.');setText('mistakeCount',state.mistakes);audioLabel('انتهى العرض')}
 function reset(){stop();state.idx=0;state.wrong={};state.mistakes=0;byId('beginButton').hidden=false;byId('introNote').hidden=false;scene('landing');hud('البوابة القضائية','14 قضية · جلستان','المحكمة مستعدة');byId('openingHero').hidden=false;setText('heroEyebrow','قرار واحد قد يغيّر مستقبل متعلم');byId('heroTitle').innerHTML='حين تصبح<br><em>أنت القاضي</em>';setText('heroLead','تجربة قضائية تعليمية من جلستين وأربع عشرة قضية، تسير أحداثها تلقائيًا وتتوقف فقط لتصدر حكمك.');audioLabel('عينات أصلية · تسجيلات المداولات قيد الإعداد')}
-byId('beginButton').addEventListener('click',()=>opening(1));byId('restartButton').addEventListener('click',()=>reset());byId('reviewCaseButton').addEventListener('click',reviewCase);
+byId('beginButton').addEventListener('click',()=>opening(1));byId('restartButton').addEventListener('click',()=>reset());
 document.addEventListener('keydown',e=>{if(state.phase==='choice'){const i=['1','2','3','4','أ','ب','ج','د'].indexOf(e.key);if(i>=0){let k=i%4;const b=byId('choiceGrid').children[k];if(b&&!b.disabled)decide(k)}}});
 
 const voiceIDs=['ceremony_s1_opening','ceremony_s1_closing','ceremony_s2_opening','ceremony_s2_closing',
