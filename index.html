@@ -382,7 +382,32 @@ function effect(kind){
    o.frequency.setValueAtTime(f,a);if(to)o.frequency.exponentialRampToValueAtTime(Math.max(to,30),a+d);
    v.gain.setValueAtTime(g,a);v.gain.exponentialRampToValueAtTime(.0001,a+d);o.connect(v);v.connect(ac.destination);o.start(a);o.stop(a+d+.015);
   }
-  if(kind==='correct'){hit(176,.23,.12,0,66);hit(165,.21,.10,.18,70)}
+  if(kind==='correct'){
+   // Wooden courtroom gavel: sharp broadband impact plus short, low wooden resonance.
+   // Avoid the two-note electronic success chime used previously.
+   const sampleRate=ac.sampleRate,noise=ac.createBuffer(1,Math.ceil(sampleRate*.20),sampleRate);
+   const samples=noise.getChannelData(0);
+   for(let i=0;i<samples.length;i++)samples[i]=(Math.random()*2-1)*Math.exp(-i/(sampleRate*.022));
+   function knock(delay,level){
+    const t=start+delay;
+    const source=ac.createBufferSource();source.buffer=noise;
+    const wood=ac.createBiquadFilter();wood.type='lowpass';wood.frequency.value=1650;wood.Q.value=.8;
+    const attack=ac.createGain();attack.gain.setValueAtTime(.0001,t);
+    attack.gain.exponentialRampToValueAtTime(level,t+.002);
+    attack.gain.exponentialRampToValueAtTime(.0001,t+.115);
+    source.connect(wood);wood.connect(attack);attack.connect(ac.destination);
+    source.start(t);source.stop(t+.15);
+    for(const [freq,amp,decay] of [[195,.36,.19],[345,.15,.105],[520,.055,.065]]){
+     const osc=ac.createOscillator(),gain=ac.createGain();
+     osc.type='sine';osc.frequency.setValueAtTime(freq,t);
+     osc.frequency.exponentialRampToValueAtTime(freq*.84,t+decay);
+     gain.gain.setValueAtTime(Math.max(.0001,level*amp),t+.001);
+     gain.gain.exponentialRampToValueAtTime(.0001,t+decay);
+     osc.connect(gain);gain.connect(ac.destination);osc.start(t);osc.stop(t+decay+.01);
+    }
+   }
+   knock(0,.40);
+  }
   if(kind==='wrong')hit(335,.34,.045,0,170);
   if(kind==='open'){hit(390,.7,.023);hit(580,.7,.015,.14)}
   if(kind==='paper')hit(260,.13,.012,0,170);
