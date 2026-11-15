@@ -135,7 +135,7 @@
     </section>
     <div class="lower-right"><span class="gold-dot"></span><span id="situation">المحكمة مستعدة</span></div>
     <div class="lower-left"><span>الوقائع افتراضية وتستند إلى وثيقتي الإطار الوطني والمهارات</span><span id="stepInfo">انتظار بدء المحاكمة</span></div>
-    <nav class="court-controls" id="courtControls" hidden aria-label="التنقل بين المقاطع"><div><button id="backScene" type="button">السابق</button><button id="nextScene" class="next" type="button">التالي</button></div><small id="courtHint">يمكنك الرجوع أو المتابعة</small></nav>
+    <nav class="court-controls" id="courtControls" hidden aria-label="التنقل بين المقاطع"><div><button id="backScene" type="button">السابق</button><button id="nextScene" class="next" type="button">التالي</button></div><label for="caseNavigator" style="font-size:11px;color:#f5d9ad">الانتقال إلى قضية سابقة</label><select id="caseNavigator" aria-label="الانتقال إلى قضية سبق الوصول إليها" style="max-width:245px;width:100%;padding:7px 10px;border-radius:7px;border:1px solid #d8b578;background:#142239;color:#ffe3ac;font:700 12px Tajawal,sans-serif" hidden></select><small id="courtHint">يمكنك الرجوع أو المتابعة</small></nav>
     <aside id="khalidAudioDock" class="khalid-audio-dock" aria-label="التحكم بصوت رئيس المحكمة خالد" hidden>
       <div class="khalid-audio-identity"><strong>🎙️ صوت خالد</strong><small id="khalidAudioStatus" aria-live="polite">جارٍ التحميل</small></div>
       <span class="khalid-audio-divider" aria-hidden="true"></span>
@@ -301,10 +301,22 @@ byId('khalidMuteButton').addEventListener('click',()=>{
  syncKhalidControls();
 });
 
-const progress={approved:new Set(),resume:new Map(),previous:null,next:null};
+const progress={approved:new Set(),resume:new Map(),previous:null,next:null,maxVisited:0};
+function refreshCaseNavigator(){
+ const select=byId("caseNavigator");if(!select)return;
+ select.hidden=progress.maxVisited<1 || state.phase==="landing";
+ const selected=state.idx;
+ select.replaceChildren(new Option("انتقلي إلى قضية سبق الوصول إليها",""));
+ for(let i=0;i<=progress.maxVisited&&i<CASES.length;i++){
+  const c=CASES[i];select.add(new Option("القضية "+c.id+" — "+c.title,String(i)));
+ }
+ select.value=state.phase==="story"||state.phase==="choice"||state.phase==="debate"||state.phase==="verdict"?String(selected):"";
+}
+
 function controls(previous,next,hint,nextLabel,previousLabel){
  progress.previous=previous;progress.next=next;
- byId('courtControls').hidden=!(previous||next);
+ byId('courtControls').hidden=!(previous||next||progress.maxVisited>=1&&state.phase!=='landing');
+ refreshCaseNavigator();
  byId('backScene').hidden=!previous;byId('nextScene').hidden=!next;
  setText('backScene',previousLabel||'السابق');setText('nextScene',nextLabel||'التالي');
  setText('courtHint',hint||'يمكنك الرجوع أو التقدم');
@@ -437,7 +449,7 @@ function speech(kind,session,part=0,manual=false){
 }
 opening=function(session){openingScene(session,false)};
 function story(caseIndex,part=0,manual=false){
- const c=CASES[caseIndex];state.idx=caseIndex;scene('story');hud('الجلسة '+sesName(c.session),'القضية '+c.num+' من 7','عرض القضية');
+ const c=CASES[caseIndex];state.idx=caseIndex;progress.maxVisited=Math.max(progress.maxVisited,caseIndex);scene('story');hud('الجلسة '+sesName(c.session),'القضية '+c.num+' من 7','عرض القضية');
  showActor('Khalid');byId('storyLayout').hidden=false;setText('fileSerial','ملف '+String(c.id).padStart(2,'0')+' / 14');
  setText('storyTag',c.skill);setText('caseTitle',c.title);
  const sections=splitStory(c.story),key='case_'+String(c.id).padStart(2,'0')+'_narration';
@@ -454,7 +466,7 @@ function story(caseIndex,part=0,manual=false){
    if(j>=sections.length){choices();return}
    setText('storyText',sections[j]);setText('storyStep',String(j+1).padStart(2,'0')+' / '+String(sections.length).padStart(2,'0'));
    byId('railFill').style.width=((j+1)/sections.length*100)+'%';
-   controls(()=>{stop();j=Math.max(0,j-1);show()},()=>{stop();j++;show()},'عرض الوقائع نصيًا');
+   controls(()=>{stop();if(j===0)prev();else{j--;show()}},()=>{stop();j++;show()},'عرض الوقائع نصيًا');
    if(!manual)setTimer(seconds(sections[j]),()=>{j++;show()});
   }show();
  }
@@ -495,7 +507,8 @@ closing=function(session){effect('close');speech('closing',session,0,false)};
 const oldFinish=finish;
 finish=function(){oldFinish();controls(()=>speech('closing',2,splitSpeech(DATA.closings['2']).length-1,true),null,'مراجعة الختام',null,'السابق: الختام')};
 const oldReset=reset;
-reset=function(){progress.approved.clear();progress.resume.clear();oldReset();controls(null,null)};
+reset=function(){progress.approved.clear();progress.resume.clear();progress.maxVisited=0;oldReset();controls(null,null)};
+byId('caseNavigator').addEventListener('change',e=>{const val=e.target.value;if(val==='')return;const target=Number(val);if(!Number.isInteger(target)||target<0||target>progress.maxVisited)return;stop();progress.resume.clear();story(target,0,true)});
 byId('backScene').addEventListener('click',()=>{if(progress.previous)progress.previous()});
 byId('nextScene').addEventListener('click',()=>{if(progress.next)progress.next()});
 byId('courtMute').addEventListener('click',()=>{fxEnabled=!fxEnabled;setText('courtMute',fxEnabled?'🔊 المؤثرات':'🔇 المؤثرات')});
