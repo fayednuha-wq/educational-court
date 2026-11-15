@@ -136,6 +136,34 @@
  .stage[data-phase="story"] .court-controls{flex-wrap:wrap;justify-content:flex-start}
  .stage[data-phase="story"] #caseNavigator{width:170px!important;max-width:48vw!important}
 }
+
+/* End screen only: keep replay accessible and separate from closing navigation. */
+.stage[data-phase="end"] .film-canvas{z-index:21}
+.stage[data-phase="end"] .end-layer{
+ top:7%;bottom:86px;left:7%;right:7%;z-index:2;
+ overflow-y:auto;overscroll-behavior:contain;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ padding:12px 12px 25px;
+}
+.stage[data-phase="end"] .end-layer[hidden]{display:none!important}
+.stage[data-phase="end"] #restartButton{
+ position:relative;z-index:3;flex-shrink:0;
+ margin:20px auto 10px;pointer-events:auto;
+}
+.stage[data-phase="end"] .court-controls{
+ z-index:22;bottom:18px;left:3%;right:auto;transform:none;
+ max-width:260px;align-items:flex-start;
+}
+.stage[data-phase="end"] .court-controls small{display:none}
+@media(max-width:700px){
+ .stage[data-phase="end"] .end-layer{top:2%;bottom:115px;left:3%;right:3%;justify-content:flex-start}
+ .stage[data-phase="end"] .end-layer h2{font-size:clamp(23px,6vw,34px);margin:5px}
+ .stage[data-phase="end"] .end-layer p{font-size:14px;line-height:1.6}
+ .stage[data-phase="end"] .end-scale{font-size:39px}
+ .stage[data-phase="end"] .scoreboard{gap:14px;margin:12px 0}
+ .stage[data-phase="end"] #restartButton{font-size:14px;padding:10px 15px;margin:14px auto 8px}
+ .stage[data-phase="end"] .court-controls{bottom:7px;max-width:90%;left:4%}
+}
 </style>
 </head>
 <body>
