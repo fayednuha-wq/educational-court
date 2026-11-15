@@ -101,6 +101,31 @@
  .stage[data-phase="choice"] #caseNavigator{max-width:175px!important;min-width:0;font-size:10px!important}
  .stage[data-phase="choice"] .choice-layer{padding-bottom:82px;justify-content:flex-start;overflow-y:auto}
 }
+
+/* Story navigation stays in its own lower-left region, away from the yellow case-record progress rail. */
+.stage[data-phase="story"] .court-controls{
+ left:3%;right:auto;bottom:20px;transform:none;
+ max-width:250px;align-items:flex-start;gap:4px;
+}
+.stage[data-phase="story"] .court-controls>div{gap:7px}
+.stage[data-phase="story"] .court-controls button{min-width:78px;padding:8px 10px;font-size:12px}
+.stage[data-phase="story"] .court-controls small{display:none}
+.stage[data-phase="story"] .story-layout{padding-bottom:12px}
+@media(max-width:860px){
+ .stage[data-phase="story"] .story-layout{
+  top:9%;max-height:calc(100% - 140px);overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:#b99b63 transparent;
+ }
+ .stage[data-phase="story"] .court-controls{bottom:6px;left:3%;right:3%;max-width:none;flex-direction:row;align-items:center;justify-content:space-between;gap:7px}
+ .stage[data-phase="story"] .court-controls>div{flex-shrink:0}
+ .stage[data-phase="story"] .court-controls label{display:none}
+ .stage[data-phase="story"] #caseNavigator{max-width:170px!important;min-width:0;font-size:10px!important}
+}
+@media(max-width:580px){
+ .stage[data-phase="story"] .story-layout{max-height:calc(100% - 115px);top:7%}
+ .stage[data-phase="story"] .text-rail{flex-wrap:wrap;gap:7px}
+ .stage[data-phase="story"] .rail{width:min(150px,45vw)}
+}
 </style>
 </head>
 <body>
